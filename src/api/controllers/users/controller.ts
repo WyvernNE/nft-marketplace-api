@@ -205,5 +205,18 @@ export class Controller {
     }
   }
 
+  async dataTransfer(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void>{
+    try{
+      await UserService.dataTransfer()
+      res.json({ok: true});
+    }catch(err){
+      next(err)
+    }
+  }
+
 }
 export default new Controller();

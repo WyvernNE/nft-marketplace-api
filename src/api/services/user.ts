@@ -1,7 +1,7 @@
 import { request } from "graphql-request";
 import { IUser, IUserDTO } from "../../interfaces/IUser";
-import { NFTListResponse } from "../../interfaces/graphQL";
 import UserModel from "../../models/user";
+import NftViewModel from "../../models/nftView";
 import UserViewModel from "../../models/userView";
 import QueriesBuilder from "./gqlQueriesBuilder";
 import crypto from "crypto";
@@ -316,6 +316,54 @@ export class UserService {
           { walletId },
           { twitterVerificationToken: '',twitterVerified: isValid }
         );
+    }catch(err){
+      throw err
+    }
+  }
+
+  async dataTransfer(): Promise<void>{
+    try{
+      // USER LIKES
+      const users = await UserModel.find()
+      users.forEach(async user => {
+        if (user.likedNFTs && user.likedNFTs.length>0){
+          const newLikes = [] as any[]
+          user.likedNFTs.forEach(async like => {
+            if (typeof like === 'string'){
+              const serieId = (await NFTService.getNFT(like)).serieId
+              if (serieId){
+                newLikes.push(
+                  {
+                    serieId,
+                    nftId: like
+                  }
+                )
+              }
+            }
+          })
+          user.likedNFTs = newLikes
+          await user.save()
+        }
+      });
+      // NFT VIEWS
+      const nftViews = await NftViewModel.find()
+      const viewsToDelete = [] as any
+      nftViews.forEach(async nftView => {
+        const viewedId = (nftView as any).viewed
+        const viewedSerie = (await NFTService.getNFT(viewedId)).serieId
+        if (viewedSerie){
+          nftView.viewedId = viewedId;
+          nftView.viewedSerie = viewedSerie;
+          (nftView as any).viewed = undefined;
+          await nftView.save()
+        }else{
+          viewsToDelete.push(nftView._id)
+        }
+      })
+      // Delete old views
+      // tslint:disable-next-line:no-console
+      console.log(viewsToDelete)
+      NftViewModel.deleteMany({_id: {$in: viewsToDelete.map((x: any) => x._id)}})
     }catch(err){
       throw err
     }
