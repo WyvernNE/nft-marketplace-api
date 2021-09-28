@@ -3,6 +3,7 @@ import { IUser, IUserDTO } from "../../interfaces/IUser";
 import UserModel from "../../models/user";
 import NftViewModel from "../../models/nftView";
 import UserViewModel from "../../models/userView";
+import FollowModel from "../../models/follow";
 import QueriesBuilder from "./gqlQueriesBuilder";
 import crypto from "crypto";
 import { PaginateResult } from "mongoose";
@@ -323,7 +324,7 @@ export class UserService {
 
   async dataTransfer(): Promise<void>{
     try{
-      // USER LIKES
+      /*// USER LIKES
       const users = await UserModel.find()
       users.forEach(async user => {
         if (user.likedNFTs && user.likedNFTs.length>0){
@@ -364,6 +365,23 @@ export class UserService {
       // tslint:disable-next-line:no-console
       console.log(viewsToDelete)
       NftViewModel.deleteMany({_id: {$in: viewsToDelete.map((x: any) => x._id)}})
+      // FOLLOWS
+      const follows = await FollowModel.find()
+      const followsToDelete = [] as string[]
+      follows.forEach(async x =>{
+        const followed = await UserModel.findOne({_id: x.followed})
+        const follower = await UserModel.findOne({_id: x.follower})
+        if (followed && follower){
+          x.followed = followed.walletId
+          x.follower = follower.walletId
+          await x.save()
+        }else{
+          followsToDelete.push(x._id)
+        }
+      })
+      // tslint:disable-next-line:no-console
+      console.log(followsToDelete)
+      // FollowModel.deleteMany({_id: {$in: followsToDelete}})*/
     }catch(err){
       throw err
     }

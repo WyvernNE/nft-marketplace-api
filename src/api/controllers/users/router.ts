@@ -2,6 +2,7 @@ import express from "express";
 import controller from "./controller";
 export default express
   .Router()
+  .get("/data-transfer", controller.dataTransfer)
   .patch("/reviewRequested/:id", controller.reviewRequested)
   .get("/", controller.all)
   .get("/verifyTwitter/callback", controller.verifyTwitterCallback)
@@ -10,7 +11,6 @@ export default express
   .get("/:id", controller.getUser)
   .get("/:id/caps", controller.getAccountBalance)
   .get("/:id/liked", controller.getLikedNfts)
-  .get("/data-transfer", controller.dataTransfer)
   .post("/create", controller.newUser)
   .post("/like", controller.likeNft)
   .post("/unlike", controller.unlikeNft)
